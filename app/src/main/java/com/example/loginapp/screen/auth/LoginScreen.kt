@@ -31,6 +31,10 @@ fun LoginScreen(
     viewModel: AuthViewModel,
     onNavigateToSignUp: () -> Unit,
 ) {
+    val formState by viewModel.formState.collectAsState()
+
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         viewModel.clearErrors()
@@ -43,12 +47,6 @@ fun LoginScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        val formState by viewModel.formState.collectAsState()
-
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-
         Text(
             text = "ログイン",
             style = MaterialTheme.typography.headlineMedium,

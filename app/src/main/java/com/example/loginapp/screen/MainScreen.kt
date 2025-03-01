@@ -19,7 +19,6 @@ fun MainScreen(
 
     Box(modifier = modifier) {
         when (val currentAuthState = authState) {
-            AuthState.Loading -> LoadingScreen()
             AuthState.LoggedOut -> AuthScreens(viewModel)
             is AuthState.LogIn -> HomeScreen(
                 userName = currentAuthState.user.displayName ?: "",

@@ -18,7 +18,7 @@ import javax.inject.Inject
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
+    private val _authState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
     val authState = _authState.asStateFlow()
 
     private val _formState = MutableStateFlow(AuthFormState())
