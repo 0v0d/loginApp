@@ -2,6 +2,7 @@ package com.example.loginapp.screen.auth
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -50,6 +51,9 @@ private fun NavHostController.navigateSingleTopTo(
 ) {
     this.navigate(route) {
         launchSingleTop = true
+        popUpTo(this@navigateSingleTopTo.graph.findStartDestination().id) {
+            saveState = true
+        }
         restoreState = true
     }
 }
