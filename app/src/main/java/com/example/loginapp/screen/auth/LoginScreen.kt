@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +31,11 @@ fun LoginScreen(
     viewModel: AuthViewModel,
     onNavigateToSignUp: () -> Unit,
 ) {
+
+    LaunchedEffect(Unit) {
+        viewModel.clearErrors()
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -38,8 +44,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        val emailError by viewModel.emailError.collectAsState()
-        val passwordError by viewModel.passwordError.collectAsState()
+        val formState by viewModel.formState.collectAsState()
 
         var email by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
@@ -52,7 +57,7 @@ fun LoginScreen(
 
         EmailField(
             value = email,
-            error = emailError,
+            error = formState.emailError,
             onNewValue = { email = it },
             modifier = Modifier.fillMaxWidth()
         )
@@ -62,12 +67,23 @@ fun LoginScreen(
         PasswordField(
             value = password,
             placeholder = "パスワード",
-            error = passwordError,
+            error = formState.passwordError,
             onNewValue = { password = it },
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+
+        formState.firebaseError?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = { viewModel.logIn(email, password) },

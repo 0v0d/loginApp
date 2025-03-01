@@ -12,6 +12,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,13 +31,15 @@ fun SignUpScreen(
     onNavigateToLogin: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val emailError by viewModel.emailError.collectAsState()
-    val passwordError by viewModel.passwordError.collectAsState()
-    val confirmPasswordError by viewModel.confirmPasswordError.collectAsState()
+    val formState by viewModel.formState.collectAsState()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        viewModel.clearErrors()
+    }
 
     Column(
         modifier = modifier
@@ -53,7 +56,7 @@ fun SignUpScreen(
 
         EmailField(
             value = email,
-            error = emailError,
+            error = formState.emailError,
             onNewValue = { email = it },
             modifier = Modifier.fillMaxWidth()
         )
@@ -62,7 +65,7 @@ fun SignUpScreen(
 
         PasswordField(
             value = password,
-            error = passwordError,
+            error = formState.passwordError,
             placeholder = "パスワード",
             onNewValue = { password = it },
             modifier = Modifier.fillMaxWidth()
@@ -72,13 +75,24 @@ fun SignUpScreen(
 
         PasswordField(
             value = confirmPassword,
-            error = confirmPasswordError,
+            error = formState.confirmPasswordError,
             placeholder = "パスワードの再確認",
             onNewValue = { confirmPassword = it },
             modifier = Modifier.fillMaxWidth()
         )
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+
+        formState.firebaseError?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = { viewModel.signUp(email, password, confirmPassword) },

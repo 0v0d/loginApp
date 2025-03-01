@@ -1,6 +1,5 @@
 package com.example.loginapp.repository
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -18,30 +17,18 @@ interface AuthRepository {
 class AuthRepositoryImpl @Inject constructor(
     private val auth: FirebaseAuth
 ) : AuthRepository {
-
     override val currentUser: FirebaseUser? get() = auth.currentUser
 
     override suspend fun signUp(email: String, password: String) {
-        try {
-            auth.createUserWithEmailAndPassword(email, password).await()
-            val profileUpdates = UserProfileChangeRequest.Builder()
-                .setDisplayName(email.substringBefore('@')) // メールアドレスからユーザー名部分を抽出
-                .build()
-
-            // 3. ユーザープロフィールを更新
-            currentUser?.updateProfile(profileUpdates)?.await()
-        } catch (e: Exception) {
-            Log.e("AuthRepositoryImpl", "Unexpected error: ${e.message}")
-        }
+        auth.createUserWithEmailAndPassword(email, password).await()
+        val profileUpdates = UserProfileChangeRequest.Builder()
+            .setDisplayName(email.substringBefore('@'))
+            .build()
+        currentUser?.updateProfile(profileUpdates)?.await()
     }
 
     override suspend fun logIn(email: String, password: String) {
-        try {
-            auth.signInWithEmailAndPassword(email, password).await()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Log.e("AuthRepositoryImpl", "Unexpected error: ${e.message}")
-        }
+        auth.signInWithEmailAndPassword(email, password).await()
     }
 
     override suspend fun logOut() {
