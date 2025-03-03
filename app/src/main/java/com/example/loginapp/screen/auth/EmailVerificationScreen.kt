@@ -51,7 +51,6 @@ fun EmailVerificationScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // アイコン
             Icon(
                 imageVector = Icons.Rounded.MarkEmailRead,
                 contentDescription = null,
@@ -59,7 +58,6 @@ fun EmailVerificationScreen(
                 tint = MaterialTheme.colorScheme.primary
             )
 
-            // タイトルとメッセージ
             Text(
                 text = "メール認証",
                 style = MaterialTheme.typography.headlineMedium,
@@ -93,7 +91,6 @@ fun EmailVerificationScreen(
                 }
             }
 
-            // ログイン画面ボタン
             Button(
                 onClick = { onNavigateToLogin() },
                 modifier = Modifier

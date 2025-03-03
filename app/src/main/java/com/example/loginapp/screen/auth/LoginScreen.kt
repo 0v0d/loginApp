@@ -59,7 +59,6 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // ロゴかアイコン
             Icon(
                 imageVector = Icons.Rounded.Lock,
                 contentDescription = null,
@@ -67,7 +66,6 @@ fun LoginScreen(
                 tint = MaterialTheme.colorScheme.primary
             )
 
-            // タイトル
             Text(
                 text = "ログイン",
                 style = MaterialTheme.typography.headlineMedium,
@@ -80,7 +78,6 @@ fun LoginScreen(
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // メールアドレス入力
                 EmailField(
                     value = email,
                     error = formState.emailError,
@@ -88,7 +85,6 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                // パスワード入力
                 PasswordField(
                     value = password,
                     placeholder = "パスワード",
@@ -97,7 +93,6 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                // エラーメッセージ
                 formState.firebaseError?.let {
                     Text(
                         text = it,
@@ -108,7 +103,6 @@ fun LoginScreen(
                 }
             }
 
-            // ログインボタン
             Button(
                 onClick = { viewModel.logIn(email, password) },
                 modifier = Modifier
@@ -119,7 +113,6 @@ fun LoginScreen(
                 Text("ログイン")
             }
 
-            // 新規登録リンク
             TextButton(
                 onClick = { onNavigateToSignUp() },
                 modifier = Modifier.padding(top = 8.dp)

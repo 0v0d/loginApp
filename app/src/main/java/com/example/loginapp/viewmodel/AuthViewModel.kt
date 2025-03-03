@@ -53,7 +53,6 @@ class AuthViewModel @Inject constructor(
             return
         }
 
-        // 認証処理
         performAuthAction {
             authRepository.logIn(email, password)
         }
