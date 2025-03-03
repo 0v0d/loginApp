@@ -1,6 +1,7 @@
 package com.example.loginapp.repository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.tasks.await
@@ -21,25 +22,32 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun signUp(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password).await()
-        val profileUpdates = UserProfileChangeRequest.Builder()
-            .setDisplayName(email.substringBefore('@'))
-            .build()
-        currentUser?.updateProfile(profileUpdates)?.await()
+        currentUser?.sendEmailVerification()?.await()
     }
 
     override suspend fun logIn(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).await()
+        if (currentUser?.isEmailVerified != false) {
+            val profileUpdates = UserProfileChangeRequest.Builder()
+                .setDisplayName(email.substringBefore('@'))
+                .build()
+            currentUser?.updateProfile(profileUpdates)?.await()
+        } else {
+            throw FirebaseAuthException(
+                "ERROR_EMAIl_IS_NOT_VERIFIED", "Email not verified"
+            )
+        }
     }
 
     override suspend fun logOut() {
-        if (auth.currentUser?.isAnonymous == true) {
-            auth.currentUser?.delete()?.await()
+        if (currentUser?.isAnonymous == true) {
+            currentUser?.delete()?.await()
         }
         auth.signOut()
     }
 
     override suspend fun deleteAccount() {
-        auth.currentUser?.delete()?.await()
+        currentUser?.delete()?.await()
         logOut()
     }
 }

@@ -37,15 +37,8 @@ class AuthViewModel @Inject constructor(
             return
         }
 
-        viewModelScope.launch {
-            try {
-                authRepository.signUp(email, password)
-                checkAuthState()
-            } catch (e: FirebaseAuthException) {
-                updateFormState(firebaseError = getJapaneseErrorMessage(e.errorCode))
-            } catch (e: Exception) {
-                updateFormState(firebaseError = "予期しないエラーが発生しました")
-            }
+        performAuthAction {
+            authRepository.signUp(email, password)
         }
     }
 
@@ -60,9 +53,35 @@ class AuthViewModel @Inject constructor(
             return
         }
 
+        // 認証処理
+        performAuthAction {
+            authRepository.logIn(email, password)
+        }
+    }
+
+    fun logOut() {
+        viewModelScope.launch {
+            authRepository.logOut()
+            _authState.value = AuthState.LoggedOut
+        }
+    }
+
+    fun deleteAccount() {
+        viewModelScope.launch {
+            authRepository.deleteAccount()
+            _authState.value = AuthState.LoggedOut
+        }
+    }
+
+    fun clearErrors() {
+        _formState.value = AuthFormState()
+    }
+
+    private fun performAuthAction(action: suspend () -> Unit) {
+        clearErrors()
         viewModelScope.launch {
             try {
-                authRepository.logIn(email, password)
+                action()
                 checkAuthState()
             } catch (e: FirebaseAuthException) {
                 updateFormState(firebaseError = getJapaneseErrorMessage(e.errorCode))
@@ -72,27 +91,9 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun logOut() {
-        viewModelScope.launch {
-            authRepository.logOut()
-            checkAuthState()
-        }
-    }
-
-    fun deleteAccount() {
-        viewModelScope.launch {
-            authRepository.deleteAccount()
-            checkAuthState()
-        }
-    }
-
-    fun clearErrors() {
-        _formState.value = AuthFormState()
-    }
-
     private fun checkAuthState() {
         val currentUser = authRepository.currentUser
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.isEmailVerified) {
             _authState.value = AuthState.LogIn(currentUser)
         } else {
             _authState.value = AuthState.LoggedOut
