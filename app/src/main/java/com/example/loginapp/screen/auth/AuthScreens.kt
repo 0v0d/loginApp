@@ -7,6 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.loginapp.screen.auth.AuthDestinations.EMAIL_VERIFICATION_SCREEN
 import com.example.loginapp.screen.auth.AuthDestinations.LOGIN_SCREEN
 import com.example.loginapp.screen.auth.AuthDestinations.SIGN_UP_SCREEN
 import com.example.loginapp.viewmodel.AuthViewModel
@@ -40,7 +41,25 @@ fun AuthScreens(
                     navController.navigateSingleTopTo(
                         LOGIN_SCREEN,
                     )
+                },
+                onNavigateToEmailVerification = {
+                    navController.navigateSingleTopTo(
+                        EMAIL_VERIFICATION_SCREEN,
+                    )
                 }
+            )
+        }
+
+        composable(EMAIL_VERIFICATION_SCREEN) {
+            EmailVerificationScreen(
+                onAppear = {
+                    viewModel.logOut()
+                },
+                onNavigateToLogin = {
+                    navController.navigateSingleTopTo(
+                        LOGIN_SCREEN,
+                    )
+                },
             )
         }
     }
@@ -61,4 +80,5 @@ private fun NavHostController.navigateSingleTopTo(
 private object AuthDestinations {
     const val LOGIN_SCREEN = "LoginScreen"
     const val SIGN_UP_SCREEN = "SignUpScreen"
+    const val EMAIL_VERIFICATION_SCREEN = "EmailVerificationScreen"
 }

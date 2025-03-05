@@ -1,5 +1,6 @@
 package com.example.loginapp.screen.auth
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,12 +24,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.loginapp.screen.component.EmailField
 import com.example.loginapp.screen.component.PasswordField
+import com.example.loginapp.state.AuthFormState
 import com.example.loginapp.viewmodel.AuthViewModel
 
 @Composable
 fun SignUpScreen(
     viewModel: AuthViewModel,
     onNavigateToLogin: () -> Unit,
+    onNavigateToEmailVerification: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val formState by viewModel.formState.collectAsState()
@@ -44,8 +47,9 @@ fun SignUpScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -95,7 +99,13 @@ fun SignUpScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { viewModel.signUp(email, password, confirmPassword) },
+            onClick = {
+                viewModel.signUp(email, password, confirmPassword)
+                if (viewModel.formState.value != AuthFormState()) {
+                    return@Button
+                }
+                onNavigateToEmailVerification()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("登録")
