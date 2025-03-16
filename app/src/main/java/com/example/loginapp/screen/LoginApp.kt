@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.example.loginapp.navigation.AppNavigation
 import com.example.loginapp.ui.theme.LoginAppTheme
 
 @Composable
@@ -13,7 +14,7 @@ fun LoginApp(modifier: Modifier = Modifier) {
         Scaffold(
             modifier = modifier.fillMaxSize()
         ) { innerPadding ->
-            MainScreen(
+            AppNavigation(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding)
