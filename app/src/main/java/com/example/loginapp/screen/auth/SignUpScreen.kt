@@ -31,7 +31,7 @@ import com.example.loginapp.viewmodel.AuthViewModel
 fun SignUpScreen(
     viewModel: AuthViewModel,
     onNavigateToLogin: () -> Unit,
-    onNavigateToEmailVerification: () -> Unit,
+    onSignUpSuccess: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val formState by viewModel.formState.collectAsState()
@@ -104,7 +104,7 @@ fun SignUpScreen(
                 if (viewModel.formState.value != AuthFormState()) {
                     return@Button
                 }
-                onNavigateToEmailVerification()
+                onSignUpSuccess()
             },
             modifier = Modifier.fillMaxWidth()
         ) {

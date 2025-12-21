@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Lock
+import androidx.compose.material.icons.rounded.MarkEmailRead
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,6 +39,7 @@ import com.example.loginapp.viewmodel.AuthViewModel
 fun LoginScreen(
     modifier: Modifier = Modifier,
     viewModel: AuthViewModel,
+    showEmailVerificationMessage: Boolean = false,
     onNavigateToSignUp: () -> Unit,
 ) {
     val formState by viewModel.formState.collectAsState()
@@ -73,6 +77,43 @@ fun LoginScreen(
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
+
+            if (showEmailVerificationMessage) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.MarkEmailRead,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Text(
+                            text = "メールアドレスに確認メールを送信しました",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                        Text(
+                            text = "メールに記載されているリンクをクリックして、アカウントの認証を完了してください。",
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                }
+            }
 
             Column(
                 modifier = Modifier.padding(16.dp),

@@ -93,7 +93,7 @@ class AuthViewModel @Inject constructor(
     private fun checkAuthState() {
         val currentUser = authRepository.currentUser
         if (currentUser != null && currentUser.isEmailVerified) {
-            _authState.value = AuthState.LogIn(currentUser)
+            _authState.value = AuthState.LoggedIn(currentUser)
         } else {
             _authState.value = AuthState.LoggedOut
         }
