@@ -14,7 +14,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,19 +21,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.loginapp.screen.component.EmailField
 import com.example.loginapp.screen.component.PasswordField
-import com.example.loginapp.state.AuthFormState
 import com.example.loginapp.viewmodel.AuthViewModel
+import com.example.loginapp.viewmodel.SignUpEvent
 
 @Composable
 fun SignUpScreen(
-    viewModel: AuthViewModel,
+    modifier: Modifier = Modifier,
+    viewModel: AuthViewModel = hiltViewModel(),
     onNavigateToLogin: () -> Unit,
     onSignUpSuccess: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
-    val formState by viewModel.formState.collectAsState()
+    val formState by viewModel.formState.collectAsStateWithLifecycle()
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -42,6 +43,17 @@ fun SignUpScreen(
 
     LaunchedEffect(Unit) {
         viewModel.clearErrors()
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                SignUpEvent.Success -> onSignUpSuccess()
+                is SignUpEvent.Failure -> {
+                    // You can handle specific failure cases here if needed
+                }
+            }
+        }
     }
 
     Column(
@@ -101,10 +113,6 @@ fun SignUpScreen(
         Button(
             onClick = {
                 viewModel.signUp(email, password, confirmPassword)
-                if (viewModel.formState.value != AuthFormState()) {
-                    return@Button
-                }
-                onSignUpSuccess()
             },
             modifier = Modifier.fillMaxWidth()
         ) {

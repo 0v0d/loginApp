@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.loginapp.screen.component.EmailField
 import com.example.loginapp.screen.component.PasswordField
 import com.example.loginapp.viewmodel.AuthViewModel
@@ -38,7 +39,7 @@ import com.example.loginapp.viewmodel.AuthViewModel
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    viewModel: AuthViewModel,
+    viewModel: AuthViewModel = hiltViewModel(),
     showEmailVerificationMessage: Boolean = false,
     onNavigateToSignUp: () -> Unit,
 ) {
@@ -47,7 +48,6 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        viewModel.logOut()
         viewModel.clearErrors()
     }
 

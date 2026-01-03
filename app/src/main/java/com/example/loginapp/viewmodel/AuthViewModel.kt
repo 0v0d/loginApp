@@ -9,20 +9,30 @@ import com.example.loginapp.utils.AuthValidator
 import com.example.loginapp.utils.ErrorMessages.getJapaneseErrorMessage
 import com.google.firebase.auth.FirebaseAuthException
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+sealed interface SignUpEvent {
+    data object Success : SignUpEvent
+    data class Failure(val message: String) : SignUpEvent
+}
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
     private val authRepository: AuthRepository
 ) : ViewModel() {
-    private val _authState = MutableStateFlow<AuthState>(AuthState.LoggedOut)
+    private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState = _authState.asStateFlow()
 
     private val _formState = MutableStateFlow(AuthFormState())
     val formState = _formState.asStateFlow()
+
+    private val _event = MutableSharedFlow<SignUpEvent>()
+    val event = _event.asSharedFlow()
 
     init {
         checkAuthState()
@@ -36,9 +46,10 @@ class AuthViewModel @Inject constructor(
             _formState.value = validationResult
             return
         }
-
+        _authState.value = AuthState.LoggedOut
         performAuthAction {
             authRepository.signUp(email, password)
+            _event.emit(SignUpEvent.Success)
         }
     }
 
@@ -59,16 +70,14 @@ class AuthViewModel @Inject constructor(
     }
 
     fun logOut() {
-        viewModelScope.launch {
+        performAuthAction {
             authRepository.logOut()
-            _authState.value = AuthState.LoggedOut
         }
     }
 
     fun deleteAccount() {
-        viewModelScope.launch {
+        performAuthAction {
             authRepository.deleteAccount()
-            _authState.value = AuthState.LoggedOut
         }
     }
 
@@ -81,11 +90,14 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 action()
+                authRepository.reloadUser()
                 checkAuthState()
             } catch (e: FirebaseAuthException) {
                 updateFormState(firebaseError = getJapaneseErrorMessage(e.errorCode))
-            } catch (e: Exception) {
+                _event.emit(SignUpEvent.Failure(getJapaneseErrorMessage(e.errorCode)))
+            } catch (_: Exception) {
                 updateFormState(firebaseError = "予期しないエラーが発生しました")
+                _event.emit(SignUpEvent.Failure("予期しないエラーが発生しました"))
             }
         }
     }

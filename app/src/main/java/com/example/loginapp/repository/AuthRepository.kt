@@ -1,5 +1,6 @@
 package com.example.loginapp.repository
 
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
@@ -9,10 +10,12 @@ import javax.inject.Inject
 
 interface AuthRepository {
     val currentUser: FirebaseUser?
+    suspend fun reloadUser()
     suspend fun logIn(email: String, password: String)
     suspend fun signUp(email: String, password: String)
     suspend fun logOut()
     suspend fun deleteAccount()
+
 }
 
 class AuthRepositoryImpl @Inject constructor(
@@ -20,9 +23,15 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
     override val currentUser: FirebaseUser? get() = auth.currentUser
 
+    override suspend fun reloadUser() {
+        currentUser?.reload()?.await()
+    }
+
     override suspend fun signUp(email: String, password: String) {
         auth.createUserWithEmailAndPassword(email, password).await()
         currentUser?.sendEmailVerification()?.await()
+        Log.d("AuthRepositoryImpl", "SignUp: Verification email sent to $email")
+        Log.d("AuthRepositoryImpl", "SignUp: Verification email sent to $currentUser")
     }
 
     override suspend fun logIn(email: String, password: String) {

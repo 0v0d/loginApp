@@ -4,4 +4,5 @@ object Destinations {
     const val LOGIN_SCREEN = "login"
     const val SIGN_UP_SCREEN = "signup"
     const val HOME_SCREEN = "home"
+    const val LOADING_SCREEN = "loading"
 }
