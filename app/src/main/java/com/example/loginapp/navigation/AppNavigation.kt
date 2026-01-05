@@ -7,19 +7,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.loginapp.navigation.Destinations.HOME_SCREEN
-import com.example.loginapp.navigation.Destinations.LOADING_SCREEN
-import com.example.loginapp.navigation.Destinations.LOGIN_SCREEN
-import com.example.loginapp.navigation.Destinations.SIGN_UP_SCREEN
-import com.example.loginapp.screen.HomeScreen
-import com.example.loginapp.screen.auth.LoginScreen
-import com.example.loginapp.screen.auth.SignUpScreen
+import androidx.navigation.toRoute
+import com.example.loginapp.screen.HomeScreen as HomeScreenComposable
+import com.example.loginapp.screen.auth.LoginScreen as LoginScreenComposable
+import com.example.loginapp.screen.auth.SignUpScreen as SignUpScreenComposable
 import com.example.loginapp.state.AuthState
 import com.example.loginapp.viewmodel.AuthViewModel
+import com.example.loginapp.navigation.LoginAppDestination.HomeScreen
+import com.example.loginapp.navigation.LoginAppDestination.LoadingScreen
+import com.example.loginapp.navigation.LoginAppDestination.LoginScreen
+import com.example.loginapp.navigation.LoginAppDestination.SignUpScreen
+
 
 @Composable
 fun AppNavigation(
@@ -31,45 +33,46 @@ fun AppNavigation(
         NavHost(
             navController = navController,
             startDestination = when (authState) {
-                is AuthState.LoggedIn -> HOME_SCREEN
-                is AuthState.LoggedOut -> LOGIN_SCREEN
-                else -> LOGIN_SCREEN
+                is AuthState.LoggedIn -> HomeScreen
+                is AuthState.LoggedOut -> LoginScreen()
+                else -> LoginScreen()
             },
             modifier = modifier
         ) {
-            composable(LOGIN_SCREEN) {
-                val showMessage = it.savedStateHandle.get<Boolean>("showEmailVerification") ?: false
-                LoginScreen(
-                    showEmailVerificationMessage = showMessage,
+            composable<LoginScreen> { backStackEntry ->
+                val loginScreen = backStackEntry.toRoute<LoginScreen>()
+                LoginScreenComposable(
+                    showEmailVerificationMessage = loginScreen.showEmailVerification,
                     onNavigateToSignUp = {
-                        navController.navigateSingleTopTo(SIGN_UP_SCREEN)
+                        navController.navigateSingleTopTo(SignUpScreen)
                     }
                 )
             }
 
-            composable(SIGN_UP_SCREEN) {
-                SignUpScreen(
+            composable<SignUpScreen> {
+                SignUpScreenComposable(
                     onNavigateToLogin = {
-                        navController.navigateSingleTopTo(LOGIN_SCREEN)
+                        navController.navigateSingleTopTo(LoginScreen())
                     },
                     onSignUpSuccess = {
-                        navController.getBackStackEntry(LOGIN_SCREEN)
-                            .savedStateHandle["showEmailVerification"] = true
-                        navController.navigateSingleTopTo(LOGIN_SCREEN)
+                        navController.navigateSingleTopTo(LoginScreen(showEmailVerification = true))
+                    },
+                    onSignUpFailed = {
+
                     }
                 )
             }
 
-            composable(HOME_SCREEN) {
+            composable<HomeScreen> {
                 val viewModel: AuthViewModel = hiltViewModel()
                 val user = (authState as? AuthState.LoggedIn)?.user
-                HomeScreen(
+                HomeScreenComposable(
                     userName = user?.displayName ?: "",
                     onLogOut = { viewModel.logOut() },
                     onDeleteAccount = { viewModel.deleteAccount() }
                 )
             }
-            composable(LOADING_SCREEN) {
+            composable<LoadingScreen> {
                 Box(
                     modifier = modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

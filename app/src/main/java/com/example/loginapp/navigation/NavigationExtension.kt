@@ -3,8 +3,8 @@ package com.example.loginapp.navigation
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
-fun NavHostController.navigateSingleTopTo(
-    route: String,
+inline fun <reified T : Any> NavHostController.navigateSingleTopTo(
+    route: T,
 ) {
     this.navigate(route) {
         launchSingleTop = true

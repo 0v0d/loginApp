@@ -21,7 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.loginapp.screen.component.EmailField
 import com.example.loginapp.screen.component.PasswordField
@@ -34,6 +34,7 @@ fun SignUpScreen(
     viewModel: AuthViewModel = hiltViewModel(),
     onNavigateToLogin: () -> Unit,
     onSignUpSuccess: () -> Unit,
+    onSignUpFailed: () -> Unit
 ) {
     val formState by viewModel.formState.collectAsStateWithLifecycle()
 
@@ -50,7 +51,7 @@ fun SignUpScreen(
             when (event) {
                 SignUpEvent.Success -> onSignUpSuccess()
                 is SignUpEvent.Failure -> {
-                    // You can handle specific failure cases here if needed
+                    onSignUpFailed()
                 }
             }
         }
