@@ -1,21 +1,23 @@
 package com.example.loginapp.repository
 
-import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseAuthException
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 
 interface AuthRepository {
     val currentUser: FirebaseUser?
+    val authChangeNotifier: SharedFlow<Unit>
     suspend fun reloadUser()
     suspend fun logIn(email: String, password: String)
     suspend fun signUp(email: String, password: String)
     suspend fun logOut()
     suspend fun deleteAccount()
-
+    suspend fun resendVerificationEmail()
 }
 
 class AuthRepositoryImpl @Inject constructor(
@@ -23,40 +25,55 @@ class AuthRepositoryImpl @Inject constructor(
 ) : AuthRepository {
     override val currentUser: FirebaseUser? get() = auth.currentUser
 
+    private val _authChangeNotifier = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    override val authChangeNotifier: SharedFlow<Unit> = _authChangeNotifier.asSharedFlow()
+
+    private fun notifyAuthChanged() {
+        _authChangeNotifier.tryEmit(Unit)
+    }
+
     override suspend fun reloadUser() {
         currentUser?.reload()?.await()
     }
 
-    override suspend fun signUp(email: String, password: String) {
-        auth.createUserWithEmailAndPassword(email, password).await()
-        currentUser?.sendEmailVerification()?.await()
-        Log.d("AuthRepositoryImpl", "SignUp: Verification email sent to $email")
-        Log.d("AuthRepositoryImpl", "SignUp: Verification email sent to $currentUser")
-    }
-
     override suspend fun logIn(email: String, password: String) {
         auth.signInWithEmailAndPassword(email, password).await()
-        if (currentUser?.isEmailVerified != false) {
+        val user = auth.currentUser ?: return
+        user.reload().await()
+        if (auth.currentUser?.isEmailVerified == true && auth.currentUser?.displayName.isNullOrBlank()) {
             val profileUpdates = UserProfileChangeRequest.Builder()
                 .setDisplayName(email.substringBefore('@'))
                 .build()
-            currentUser?.updateProfile(profileUpdates)?.await()
-        } else {
-            throw FirebaseAuthException(
-                "ERROR_EMAIl_IS_NOT_VERIFIED", "Email not verified"
-            )
+            auth.currentUser?.updateProfile(profileUpdates)?.await()
         }
+        notifyAuthChanged()
+    }
+
+    override suspend fun signUp(email: String, password: String) {
+        val result = auth.createUserWithEmailAndPassword(email, password).await()
+        val user = result.user ?: return
+        val profileUpdates = UserProfileChangeRequest.Builder()
+            .setDisplayName(email.substringBefore('@'))
+            .build()
+        user.updateProfile(profileUpdates).await()
+        user.sendEmailVerification().await()
+        notifyAuthChanged()
     }
 
     override suspend fun logOut() {
-        if (currentUser?.isAnonymous == true) {
-            currentUser?.delete()?.await()
+        if (auth.currentUser?.isAnonymous == true) {
+            auth.currentUser?.delete()?.await()
         }
         auth.signOut()
+        notifyAuthChanged()
     }
 
     override suspend fun deleteAccount() {
-        currentUser?.delete()?.await()
-        logOut()
+        auth.currentUser?.delete()?.await()
+        notifyAuthChanged()
+    }
+
+    override suspend fun resendVerificationEmail() {
+        currentUser?.sendEmailVerification()?.await()
     }
 }

@@ -1,20 +1,22 @@
 package com.example.loginapp.navigation
 
+import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed class LoginAppDestination {
+sealed class LoginAppDestination: NavKey {
     @Serializable
-    data class LoginScreen(
-        val showEmailVerification: Boolean = false
-    )
+    data object Login : LoginAppDestination()
 
     @Serializable
-    object SignUpScreen
+    data object SignUp : LoginAppDestination()
 
     @Serializable
-    object HomeScreen
+    data class EmailVerification(val email: String) : LoginAppDestination()
 
     @Serializable
-    object LoadingScreen
+    data class Home(val userName: String = "") : LoginAppDestination()
+
+    @Serializable
+    data object Loading : LoginAppDestination()
 }

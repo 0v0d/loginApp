@@ -4,75 +4,56 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
-import com.example.loginapp.screen.HomeScreen as HomeScreenComposable
-import com.example.loginapp.screen.auth.LoginScreen as LoginScreenComposable
-import com.example.loginapp.screen.auth.SignUpScreen as SignUpScreenComposable
-import com.example.loginapp.state.AuthState
-import com.example.loginapp.viewmodel.AuthViewModel
-import com.example.loginapp.navigation.LoginAppDestination.HomeScreen
-import com.example.loginapp.navigation.LoginAppDestination.LoadingScreen
-import com.example.loginapp.navigation.LoginAppDestination.LoginScreen
-import com.example.loginapp.navigation.LoginAppDestination.SignUpScreen
-
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import com.example.loginapp.navigation.LoginAppDestination.EmailVerification
+import com.example.loginapp.navigation.LoginAppDestination.Home
+import com.example.loginapp.navigation.LoginAppDestination.Loading
+import com.example.loginapp.navigation.LoginAppDestination.Login
+import com.example.loginapp.navigation.LoginAppDestination.SignUp
+import com.example.loginapp.screen.HomeScreen
+import com.example.loginapp.screen.auth.EmailVerificationScreen
+import com.example.loginapp.screen.auth.LoginScreen
+import com.example.loginapp.screen.auth.SignUpScreen
 
 @Composable
-fun AppNavigation(
+fun NavGraph(
     modifier: Modifier = Modifier,
-    authState: AuthState,
-    navController: NavHostController,
+    backStack: MutableList<NavKey>
 ) {
-    key(authState::class) {
-        NavHost(
-            navController = navController,
-            startDestination = when (authState) {
-                is AuthState.LoggedIn -> HomeScreen
-                is AuthState.LoggedOut -> LoginScreen()
-                else -> LoginScreen()
-            },
-            modifier = modifier
-        ) {
-            composable<LoginScreen> { backStackEntry ->
-                val loginScreen = backStackEntry.toRoute<LoginScreen>()
-                LoginScreenComposable(
-                    showEmailVerificationMessage = loginScreen.showEmailVerification,
+    NavDisplay(
+        modifier = modifier,
+        backStack = backStack,
+        onBack = { backStack.removeLastOrNull() },
+        entryProvider = entryProvider {
+            entry<Login> {
+                LoginScreen(
                     onNavigateToSignUp = {
-                        navController.navigateSingleTopTo(SignUpScreen)
+                        backStack.add(SignUp)
                     }
                 )
             }
-
-            composable<SignUpScreen> {
-                SignUpScreenComposable(
+            entry<SignUp> {
+                SignUpScreen(
                     onNavigateToLogin = {
-                        navController.navigateSingleTopTo(LoginScreen())
-                    },
-                    onSignUpSuccess = {
-                        navController.navigateSingleTopTo(LoginScreen(showEmailVerification = true))
-                    },
-                    onSignUpFailed = {
-
+                        backStack.removeLastOrNull()
                     }
                 )
             }
-
-            composable<HomeScreen> {
-                val viewModel: AuthViewModel = hiltViewModel()
-                val user = (authState as? AuthState.LoggedIn)?.user
-                HomeScreenComposable(
-                    userName = user?.displayName ?: "",
-                    onLogOut = { viewModel.logOut() },
-                    onDeleteAccount = { viewModel.deleteAccount() }
+            entry<EmailVerification> { destination ->
+                EmailVerificationScreen(
+                    email = destination.email
                 )
             }
-            composable<LoadingScreen> {
+            entry<Home> { destination ->
+                HomeScreen(
+                    userName = destination.userName
+                )
+            }
+            entry<Loading> {
                 Box(
                     modifier = modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -80,6 +61,6 @@ fun AppNavigation(
                     CircularProgressIndicator()
                 }
             }
-        }
-    }
+        },
+    )
 }

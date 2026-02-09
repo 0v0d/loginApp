@@ -35,6 +35,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    kotlin {
+        jvmToolchain(17)
+    }
     buildFeatures {
         compose = true
     }
@@ -51,8 +54,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
 
-    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
     implementation(libs.hilt.android)
     implementation(libs.androidx.compose.material.iconsExtended)
     implementation(libs.kotlinx.serialization.json)

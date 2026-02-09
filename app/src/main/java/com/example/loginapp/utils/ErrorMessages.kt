@@ -11,7 +11,8 @@ object ErrorMessages {
             "ERROR_USER_DISABLED" -> "このユーザーは無効化されています"
             "ERROR_TOO_MANY_REQUESTS" -> "試行回数が多すぎます。しばらくしてから再試行してください"
             "USER_NULL" -> "ユーザー情報が取得できませんでした"
-            "ERROR_EMAIl_IS_NOT_VERIFIED" -> "メールアドレスが確認されていません"
+            "ERROR_EMAIL_IS_NOT_VERIFIED" -> "メールアドレスが確認されていません"
+            "ERROR_EMAIL_SEND" -> "メールの送信に失敗しました"
             else -> "認証エラーが発生しました"
         }
     }

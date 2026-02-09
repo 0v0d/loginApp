@@ -2,36 +2,38 @@ package com.example.loginapp.utils
 
 import com.example.loginapp.extension.isValidEmail
 import com.example.loginapp.extension.isValidPassword
-import com.example.loginapp.state.AuthFormState
+
+data class LoginValidationResult(
+    val emailError: String? = null,
+    val passwordError: String? = null
+)
+
+data class SignUpValidationResult(
+    val emailError: String? = null,
+    val passwordError: String? = null,
+    val confirmPasswordError: String? = null
+)
 
 object AuthValidator {
-    fun validate(
+    fun validateLogin(
+        email: String,
+        password: String
+    ): LoginValidationResult {
+        return LoginValidationResult(
+            emailError = if (!email.isValidEmail()) "メールアドレスが無効です" else null,
+            passwordError = if (!password.isValidPassword()) "パスワードは6文字以上20文字以下である必要があります" else null
+        )
+    }
+
+    fun validateSignUp(
         email: String,
         password: String,
-        confirmPassword: String? = null,
-        isLogIn: Boolean = false
-    ): AuthFormState {
-        var formState = AuthFormState()
-
-        if (!email.isValidEmail()) {
-            formState = formState.copy(
-                emailError = "メールアドレスが無効です"
-            )
-        }
-
-        if (!password.isValidPassword()) {
-            formState =
-                formState.copy(
-                    passwordError = "パスワードは6文字以上20文字以下である必要があります"
-                )
-        }
-
-        if (!isLogIn && (confirmPassword.isNullOrBlank() ||
-                    password != confirmPassword)
-        ) {
-            formState = formState.copy(confirmPasswordError = "パスワードが一致していません")
-        }
-
-        return formState
+        confirmPassword: String
+    ): SignUpValidationResult {
+        return SignUpValidationResult(
+            emailError = if (!email.isValidEmail()) "メールアドレスが無効です" else null,
+            passwordError = if (!password.isValidPassword()) "パスワードは6文字以上20文字以下である必要があります" else null,
+            confirmPasswordError = if (confirmPassword.isBlank() || password != confirmPassword) "パスワードが一致していません" else null
+        )
     }
 }
