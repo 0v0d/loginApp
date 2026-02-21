@@ -1,5 +1,6 @@
 package com.example.loginapp.repository
 
+import android.content.Context
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.UserProfileChangeRequest
@@ -13,15 +14,18 @@ interface AuthRepository {
     val currentUser: FirebaseUser?
     val authChangeNotifier: SharedFlow<Unit>
     suspend fun reloadUser()
+    fun isGoogleUser(): Boolean
     suspend fun logIn(email: String, password: String)
     suspend fun signUp(email: String, password: String)
+    suspend fun signInWithGoogle(context: Context)
     suspend fun logOut()
     suspend fun deleteAccount()
     suspend fun resendVerificationEmail()
 }
 
 class AuthRepositoryImpl @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val googleCredentialHelper: GoogleCredentialHelper
 ) : AuthRepository {
     override val currentUser: FirebaseUser? get() = auth.currentUser
 
@@ -34,6 +38,11 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun reloadUser() {
         currentUser?.reload()?.await()
+    }
+
+    override fun isGoogleUser(): Boolean {
+        val providerIds = auth.currentUser?.providerData?.map { it.providerId } ?: return false
+        return "google.com" in providerIds
     }
 
     override suspend fun logIn(email: String, password: String) {
@@ -60,7 +69,16 @@ class AuthRepositoryImpl @Inject constructor(
         notifyAuthChanged()
     }
 
+    override suspend fun signInWithGoogle(context: Context) {
+        val credential = googleCredentialHelper.getFirebaseCredential(context)
+        auth.signInWithCredential(credential).await()
+        notifyAuthChanged()
+    }
+
     override suspend fun logOut() {
+        if (isGoogleUser()) {
+            googleCredentialHelper.clearCredentialState()
+        }
         if (auth.currentUser?.isAnonymous == true) {
             auth.currentUser?.delete()?.await()
         }
@@ -69,6 +87,9 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteAccount() {
+        if (isGoogleUser()) {
+            googleCredentialHelper.clearCredentialState()
+        }
         auth.currentUser?.delete()?.await()
         notifyAuthChanged()
     }

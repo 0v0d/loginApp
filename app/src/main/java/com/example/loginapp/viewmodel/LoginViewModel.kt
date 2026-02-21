@@ -1,5 +1,6 @@
 package com.example.loginapp.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.loginapp.repository.AuthRepository
@@ -17,7 +18,8 @@ data class LoginUiState(
     val emailError: String? = null,
     val passwordError: String? = null,
     val firebaseError: String? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isGoogleLoading: Boolean = false
 )
 
 @HiltViewModel
@@ -63,6 +65,20 @@ class LoginViewModel @Inject constructor(
             } catch (_: Exception) {
                 _uiState.update {
                     it.copy(isLoading = false, firebaseError = "予期しないエラーが発生しました")
+                }
+            }
+        }
+    }
+
+    fun signInWithGoogle(context: Context) {
+        _uiState.update { it.copy(isGoogleLoading = true, firebaseError = null) }
+        viewModelScope.launch {
+            try {
+                authRepository.signInWithGoogle(context)
+                _uiState.update { it.copy(isGoogleLoading = false) }
+            } catch (_: Exception) {
+                _uiState.update {
+                    it.copy(isGoogleLoading = false, firebaseError = "Googleログインに失敗しました")
                 }
             }
         }

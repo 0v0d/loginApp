@@ -42,7 +42,7 @@ class MainViewModel @Inject constructor(
         val reloadedUser = authRepository.currentUser
         _authState.value = when {
             reloadedUser == null -> AuthState.Unauthenticated
-            reloadedUser.isEmailVerified -> AuthState.Authenticated(
+            reloadedUser.isEmailVerified || authRepository.isGoogleUser() -> AuthState.Authenticated(
                 userName = reloadedUser.displayName
                     ?: reloadedUser.email?.substringBefore('@') ?: ""
             )
